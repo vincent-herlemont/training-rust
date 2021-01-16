@@ -1,0 +1,8 @@
+[package]
+name = "vincent-work"
+version = "0.1.0"
+authors = ["chouc"]
+edition = "2018"
+
+
+[dependencies]
