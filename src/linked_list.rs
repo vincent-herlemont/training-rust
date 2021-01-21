@@ -1,7 +1,7 @@
 use std::option::Option::Some;
 use std::cell::RefCell;
 use std::rc::Rc;
-use std::convert::{TryFrom, TryInto};
+use std::iter::FromIterator;
 
 type RefNode<T> = Rc<RefCell<Node<T>>>;
 
@@ -12,23 +12,20 @@ struct Node<T> {
 }
 
 impl<T> Node<T> {
-    fn new(data:T, node: Option<Node<T>>) -> Node<T> {
-        Node {
+    fn new(data:T, node: Option<Node<T>>) -> RefNode<T> {
+        let node = Node {
             data,
             next: node.map(|node| Rc::new(RefCell::new(node)))
-        }
+        };
+        Rc::new(RefCell::new(node))
     }
-}
 
-impl<T> TryFrom<RefNode<T>> for Node<T> {
-    type Error = &'static str;
-
-    fn try_from(node: RefNode<T>) -> Result<Self, Self::Error> {
-        if let Ok(node) = Rc::try_unwrap(node) {
-            Ok(node.into_inner())
-        } else {
-            Err("can not retrieve Node from RefNode")
-        }
+    fn from_ref_node(data:T, ref_node: Option<RefNode<T>>) -> RefNode<T> {
+        let node = Node {
+            data,
+            next: ref_node
+        };
+        Rc::new(RefCell::new(node))
     }
 }
 
@@ -48,6 +45,50 @@ impl<T> Iterator for NodeItr<T> {
         } else {
             None
         }
+    }
+}
+
+struct NodeIntoItr<T> {
+    current: Option<RefNode<T>>
+}
+
+impl<T> Iterator for NodeIntoItr<T> {
+    type Item = T;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if let Some(current) = self.current.take() {
+            if let Some(next) = &current.borrow().next {
+                self.current = Option::from(Rc::clone(next))
+            }
+            if let Ok(node) = Rc::try_unwrap(current) {
+                Some(node.into_inner().data)
+            } else {
+                None
+            }
+        } else {
+            None
+        }
+    }
+}
+
+impl<T> IntoIterator for LinkedList<T> {
+    type Item = T;
+    type IntoIter = NodeIntoItr<T>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        NodeIntoItr {
+            current: self.head
+        }
+    }
+}
+
+impl<T> FromIterator<T> for LinkedList<T> {
+    fn from_iter<I: IntoIterator<Item=T>>(iter: I) -> Self {
+        let mut l = LinkedList::new();
+        for n in iter {
+            l.insert_last(n);
+        }
+        l
     }
 }
 
@@ -71,12 +112,9 @@ impl<T> LinkedList<T> {
 
     fn insert_first(&mut self,data: T) {
         if let Some(next) = self.head.take() {
-            let next: Node<_> = next.try_into().unwrap();
-            let node = Node::new(data, Some(next));
-            self.head = Some(Rc::new(RefCell::new(node)));
+            self.head = Some(Node::from_ref_node(data, Some(next)));
         } else {
-            let node = Node::new(data,None);
-            self.head = Some(Rc::new(RefCell::new(node)));
+            self.head = Some(Node::new(data,None));
         }
     }
 
@@ -117,8 +155,9 @@ impl<T> LinkedList<T> {
     fn insert_last(&mut self, data: T) {
         if let Some(last) = self.get_last() {
             let mut last = last.borrow_mut();
-            let new_node = Rc::new(RefCell::new(Node::new(data,None)));
-            last.next = Some(new_node);
+            last.next = Some(Node::new(data,None));
+        } else {
+            self.insert_first(data);
         }
     }
 
@@ -144,6 +183,20 @@ impl<T> LinkedList<T> {
         }
     }
 
+    fn insert_at(&mut self, n: usize, data: T) {
+        let size = self.size();
+        match n {
+            0 => self.insert_first(data),
+            n if n < size => {
+                let before_new = self.get_at(n-1).unwrap();
+                let mut before_new = before_new.borrow_mut();
+                before_new.next = Some(Node::from_ref_node(data,before_new.next.take()));
+            },
+            n if n == size => self.insert_last(data),
+            _ => ()
+        }
+    }
+
     fn clear(&mut self) {
         self.head = None
     }
@@ -155,6 +208,24 @@ impl<T> LinkedList<T> {
 mod tests {
     use super::*;
     use std::option::Option::Some;
+
+
+    #[test]
+    fn test_insert_at() {
+        let mut l = LinkedList::new();
+        l.insert_first(1);
+        l.insert_first(2);
+        l.insert_first(3);
+        l.insert_at(1,99);
+        assert_eq!(l.get_at(1).unwrap().borrow().data, 99);
+        assert_eq!(l.size(),4);
+        l.insert_at(0,88);
+        assert_eq!(l.get_first().unwrap().borrow().data, 88);
+        assert_eq!(l.size(),5);
+        l.insert_at(5,100);
+        assert_eq!(l.get_last().unwrap().borrow().data, 100);
+        assert_eq!(l.size(),6);
+    }
 
     #[test]
     fn test_remove_at() {
@@ -263,6 +334,26 @@ mod tests {
     #[test]
     fn test_node() {
         let n = Node::new(1,None);
-        let _ = Node::new(2, Some(n));
+        let _ = Node::from_ref_node(2, Some(n));
+
+    }
+
+    #[test]
+    fn test_into_iter() {
+        let mut l = LinkedList::new();
+        l.insert_first(1);
+        l.insert_first(2);
+        l.insert_first(3);
+        let v: Vec<_> = l.into_iter().collect();
+        assert_eq!(v,vec![3,2,1]);
+    }
+
+    #[test]
+    fn test_from_iter() {
+        let v = vec![3,2,1];
+        let l: LinkedList<_> = v.into_iter().collect();
+        assert_eq!(l.size(),3);
+        assert_eq!(l.get_first().unwrap().borrow().data,3);
+        assert_eq!(l.get_last().unwrap().borrow().data,1);
     }
 }
