@@ -6,8 +6,8 @@ use std::iter::FromIterator;
 type RefNode<T> = Rc<RefCell<Node<T>>>;
 
 #[derive(Debug)]
-struct Node<T> {
-    data: T,
+pub struct Node<T> {
+    pub data: T,
     next: Option<RefNode<T>>
 }
 
@@ -29,7 +29,7 @@ impl<T> Node<T> {
     }
 }
 
-struct NodeItr<T> {
+pub struct NodeItr<T> {
     current: Option<RefNode<T>>
 }
 
@@ -48,7 +48,7 @@ impl<T> Iterator for NodeItr<T> {
     }
 }
 
-struct NodeIntoItr<T> {
+pub struct NodeIntoItr<T> {
     current: Option<RefNode<T>>
 }
 
@@ -93,24 +93,24 @@ impl<T> FromIterator<T> for LinkedList<T> {
 }
 
 #[derive(Debug)]
-struct LinkedList<T> {
+pub struct LinkedList<T> {
     head: Option<RefNode<T>>
 }
 
 impl<T> LinkedList<T> {
-    fn new() -> LinkedList<T> {
+    pub fn new() -> LinkedList<T> {
         LinkedList {
             head: None
         }
     }
 
-    fn iter(&self) -> NodeItr<T> {
+    pub fn iter(&self) -> NodeItr<T> {
         NodeItr {
             current: self.head.as_ref().map(|node| Rc::clone(&node))
         }
     }
 
-    fn insert_first(&mut self,data: T) {
+    pub fn insert_first(&mut self,data: T) {
         if let Some(next) = self.head.take() {
             self.head = Some(Node::from_ref_node(data, Some(next)));
         } else {
@@ -118,19 +118,19 @@ impl<T> LinkedList<T> {
         }
     }
 
-    fn size(&self) -> usize {
+    pub fn size(&self) -> usize {
         self.iter().count()
     }
 
-    fn get_first(&self) -> Option<RefNode<T>> {
+    pub fn get_first(&self) -> Option<RefNode<T>> {
         self.iter().next()
     }
 
-    fn get_last(&self) -> Option<RefNode<T>> {
+    pub fn get_last(&self) -> Option<RefNode<T>> {
         self.iter().last()
     }
 
-    fn remove_first(&mut self) {
+    pub fn remove_first(&mut self) {
         if self.size() == 1 {
             self.head = None;
         }
@@ -140,7 +140,7 @@ impl<T> LinkedList<T> {
         }
     }
 
-    fn remove_last(&mut self) {
+    pub fn remove_last(&mut self) {
         let size = self.size();
         if size >= 2 {
             let mut iter = self.iter();
@@ -152,7 +152,7 @@ impl<T> LinkedList<T> {
         }
     }
 
-    fn insert_last(&mut self, data: T) {
+    pub fn insert_last(&mut self, data: T) {
         if let Some(last) = self.get_last() {
             let mut last = last.borrow_mut();
             last.next = Some(Node::new(data,None));
@@ -161,12 +161,12 @@ impl<T> LinkedList<T> {
         }
     }
 
-    fn get_at(&self,n: usize) -> Option<RefNode<T>> {
+    pub fn get_at(&self,n: usize) -> Option<RefNode<T>> {
         let mut iter = self.iter();
         iter.nth(n).map(|node| Rc::clone(&node))
     }
 
-    fn remove_at(&mut self,n: usize) {
+    pub fn remove_at(&mut self,n: usize) {
         let size = self.size();
 
         match n {
@@ -183,7 +183,7 @@ impl<T> LinkedList<T> {
         }
     }
 
-    fn insert_at(&mut self, n: usize, data: T) {
+    pub fn insert_at(&mut self, n: usize, data: T) {
         let size = self.size();
         match n {
             0 => self.insert_first(data),
@@ -197,7 +197,7 @@ impl<T> LinkedList<T> {
         }
     }
 
-    fn clear(&mut self) {
+    pub fn clear(&mut self) {
         self.head = None
     }
 }
