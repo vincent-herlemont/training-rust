@@ -1,26 +1,26 @@
 use std::option::Option::Some;
-use std::cell::RefCell;
+use std::cell::{RefCell};
 use std::rc::Rc;
 use std::iter::FromIterator;
 
 type RefNode<T> = Rc<RefCell<Node<T>>>;
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 pub struct Node<T> {
     pub data: T,
-    next: Option<RefNode<T>>
+    pub next: Option<RefNode<T>>
 }
 
 impl<T> Node<T> {
-    fn new(data:T, node: Option<Node<T>>) -> RefNode<T> {
+    pub fn new_ref_node(data:T) -> RefNode<T> {
         let node = Node {
             data,
-            next: node.map(|node| Rc::new(RefCell::new(node)))
+            next:None
         };
         Rc::new(RefCell::new(node))
     }
 
-    fn from_ref_node(data:T, ref_node: Option<RefNode<T>>) -> RefNode<T> {
+    pub fn from_ref_node(data:T, ref_node: Option<RefNode<T>>) -> RefNode<T> {
         let node = Node {
             data,
             next: ref_node
@@ -97,6 +97,14 @@ pub struct LinkedList<T> {
     head: Option<RefNode<T>>
 }
 
+impl<T> From<RefNode<T>> for LinkedList<T> {
+    fn from(node: RefNode<T>) -> Self {
+        LinkedList {
+            head: Some(node),
+        }
+    }
+}
+
 impl<T> LinkedList<T> {
     pub fn new() -> LinkedList<T> {
         LinkedList {
@@ -114,7 +122,7 @@ impl<T> LinkedList<T> {
         if let Some(next) = self.head.take() {
             self.head = Some(Node::from_ref_node(data, Some(next)));
         } else {
-            self.head = Some(Node::new(data,None));
+            self.head = Some(Node::new_ref_node(data));
         }
     }
 
@@ -155,7 +163,7 @@ impl<T> LinkedList<T> {
     pub fn insert_last(&mut self, data: T) {
         if let Some(last) = self.get_last() {
             let mut last = last.borrow_mut();
-            last.next = Some(Node::new(data,None));
+            last.next = Some(Node::new_ref_node(data));
         } else {
             self.insert_first(data);
         }
@@ -333,7 +341,7 @@ mod tests {
 
     #[test]
     fn test_node() {
-        let n = Node::new(1,None);
+        let n = Node::new_ref_node(1);
         let _ = Node::from_ref_node(2, Some(n));
 
     }
