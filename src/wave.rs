@@ -1,5 +1,3 @@
-
-
 #[derive(Debug)]
 struct Queue<T> {
     v: Vec<T>
@@ -8,7 +6,7 @@ struct Queue<T> {
 impl<T> Queue<T> {
     fn new() -> Queue<T> {
         Queue {v: vec![]}
-    } 
+    }
 
     fn add(&mut self,element: T) {
         self.v.splice(..0,vec![element]);
