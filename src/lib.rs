@@ -8,6 +8,7 @@ mod algo_04_max_char;
 mod algo_05_fizzbuzz_problem;
 mod algo_06_array_chunk;
 mod algo_07_is_anagrams;
+mod algo_08_sentence_capitalization;
 
 mod wave;
 mod stack;
