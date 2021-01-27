@@ -10,6 +10,7 @@ mod algo_06_array_chunk;
 mod algo_07_is_anagrams;
 mod algo_08_sentence_capitalization;
 mod algo_09_print_steps;
+mod algo_10_print_pyramids;
 
 mod wave;
 mod stack;

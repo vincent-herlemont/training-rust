@@ -1,3 +1,16 @@
+// print_steps(3)
+// #
+// ##
+// ###
+
+pub fn print_canvas(canvas:&Vec<Vec<char>>) -> String {
+    canvas.iter().map(|line| {
+        let mut line: String = line.iter().collect();
+        line.push('\n');
+        line
+    }).collect()
+}
+
 fn print_steps(n: usize) -> String {
     // Create vector
     let mut canvas = vec![];
@@ -10,14 +23,9 @@ fn print_steps(n: usize) -> String {
     }
 
     // Create string from vec of char
-    let canvas :String = canvas.into_iter().map(|line| {
-        let mut line: String = line.iter().collect();
-        line.insert(line.len(),'\n');
-        line
-    }).collect();
-
-    canvas
+    print_canvas(&canvas)
 }
+
 
 #[cfg(test)]
 mod tests {
