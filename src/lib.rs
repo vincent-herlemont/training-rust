@@ -11,6 +11,7 @@ mod algo_07_is_anagrams;
 mod algo_08_sentence_capitalization;
 mod algo_09_print_steps;
 mod algo_10_print_pyramids;
+mod algo_11_vowels;
 
 mod wave;
 mod stack;
