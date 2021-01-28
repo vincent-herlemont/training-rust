@@ -12,6 +12,7 @@ mod algo_08_sentence_capitalization;
 mod algo_09_print_steps;
 mod algo_10_print_pyramids;
 mod algo_11_vowels;
+mod algo_12_matrix_spirals;
 
 mod wave;
 mod stack;
