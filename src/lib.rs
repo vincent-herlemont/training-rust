@@ -14,6 +14,8 @@ mod algo_10_print_pyramids;
 mod algo_11_vowels;
 mod algo_12_matrix_spirals;
 
+mod learn_01_var;
+
 mod wave;
 mod stack;
 mod qstack;
