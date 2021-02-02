@@ -1,4 +1,6 @@
 #![allow(dead_code)]
+#![allow(unused_mut)]
+#![allow(unused_variables)]
 extern crate unicode_segmentation;
 
 mod algo_01_string_reversal;
@@ -22,3 +24,4 @@ mod qstack;
 mod linked_list;
 mod linked_list_midpoint;
 mod linked_list_is_circular;
+mod tree;
