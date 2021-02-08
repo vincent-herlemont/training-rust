@@ -2,66 +2,45 @@ use std::fmt::Debug;
 use std::cell::RefCell;
 use std::rc::Rc;
 
-type RefNode<T> = Rc<RefCell<Node<T>>>;
-
 #[derive(Debug, Eq, PartialEq)]
-struct Node<T> {
-    data:T,
-    children:Vec<RefNode<T>>
+struct Node {
+    data:i32,
+    children:Vec<Node>
 }
 
-impl<T> Node<T> {
-    fn new(data:T) -> RefNode<T> {
+impl Node {
+    fn new(data:i32) -> Node {
         let node = Node {
             data,
             children:vec![],
         };
-        Rc::new(RefCell::new(node))
+        node
     }
 
-    fn push_children(&mut self,node: RefNode<T>) {
+    fn push_children(&mut self,node: Node) {
         self.children.push(node)
+    }
+
+    fn values<'a>(&'a self) -> Box<dyn Iterator<Item=i32> + 'a> {
+        let v = vec![self.data.clone()];
+        Box::new(
+            v.into_iter().chain(self.children.iter().map(|node| {
+                node.values()
+            }).flatten())
+        )
     }
 }
 
 #[derive(Debug)]
-struct Tree<T> {
-    head: Option<RefNode<T>>
+struct Tree {
+    head: Option<Node>
 }
 
-impl<T> From<RefNode<T>> for Tree<T> {
-    fn from(ref_node: RefNode<T>) -> Self {
+impl From<Node> for Tree {
+    fn from(node: Node) -> Self {
         Tree {
-            head: Some(ref_node)
+            head: Some(node)
         }
-    }
-}
-
-impl<T> Tree<T> {
-    fn depth_first_iter(&self) -> DepthFirstIter<T> {
-        DepthFirstIter {
-            last: self.head.as_ref().map(|node| Rc::clone(node)),
-            next: None
-        }
-    }
-}
-
-struct DepthFirstIter<T> {
-    last: Option<RefNode<T>>,
-    next: Option<RefNode<T>>
-}
-
-impl<T> Iterator for DepthFirstIter<T> {
-    type Item = RefNode<T>;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        if let Some(last) = self.last {
-            if let Some(next) = self.next {
-                
-            }
-            None
-        }
-        None
     }
 }
 
@@ -72,12 +51,26 @@ mod tests {
 
     #[test]
     fn test_tree(){
-        let n1 = Node::new(2);
-        let n2 = Rc::clone(&n1);
-        let n3 = Node::new(2);
+        let mut n1 = Node::new(1);
         let n2 = Node::new(2);
-        n1.borrow_mut().push_children(n2);
-        let t: Tree<_> = n1.into();
+        let mut n3 = Node::new(3);
+        let n31 = Node::new(31);
+        {
+            n3.push_children(n31);
+        }
+        {
+            n1.push_children(n2);
+            n1.push_children(n3);
+
+            let values: Vec<_> = n1.values().collect();
+            println!("{:?}", values);
+        }
+
+
+
+
+
+        // let t: Tree<_> = n1.into();
 
         // println!("{}", n1.as_ptr() == n2.as_ptr());
         // println!("{}", n2.as_ptr() == n3.as_ptr());
