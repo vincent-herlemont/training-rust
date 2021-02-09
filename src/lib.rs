@@ -15,6 +15,7 @@ mod algo_09_print_steps;
 mod algo_10_print_pyramids;
 mod algo_11_vowels;
 mod algo_12_matrix_spirals;
+mod algo_13_fib;
 
 mod learn_01_var;
 
