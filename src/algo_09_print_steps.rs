@@ -15,7 +15,7 @@ fn print_steps(n: usize) -> String {
     // Create vector
     let mut canvas = vec![];
     for il in 0..n {
-        let mut line = vec![' ';3];
+        let mut line = vec![' ';n];
         for is in 0..il + 1  {
             line[is] = '#';
         }

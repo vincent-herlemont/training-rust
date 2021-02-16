@@ -1,6 +1,4 @@
 use std::fmt::Debug;
-use std::cell::RefCell;
-use std::rc::Rc;
 
 #[derive(Debug, Eq, PartialEq)]
 struct Node {
@@ -47,7 +45,6 @@ impl From<Node> for Tree {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::ptr;
 
     #[test]
     fn test_tree(){
